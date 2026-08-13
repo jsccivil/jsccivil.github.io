@@ -1,44 +1,31 @@
-# Deploying the site to GitHub Pages
+# Deploying the site — jsccivil.github.io
 
-This folder is the finished, ready-to-push website. Push **this** folder — not the
-`site/` folder from the design tool. (See "Why not push `site/` directly" at the bottom.)
+This folder is the finished website, configured to be served from
+**https://jsccivil.github.io** — a GitHub *user site* on Dr. Chauhan's own account.
 
-You are creating a **new repository** under your existing account (`mohitcek`) with a
-**custom domain**. Your own site at `mohitcek.github.io` is untouched — a user site and a
-project site coexist happily.
+No domain to buy, no DNS to configure, no certificate to wait for. HTTPS is automatic.
 
-About 20 minutes of work, then up to 24 hours of waiting for DNS.
-
----
-
-## Step 0 — Register the domain
-
-These files assume **`drjschauhan.com`**. Check availability at
-[Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) (at-cost, ~$10/yr) or
-[Namecheap](https://www.namecheap.com). Avoid GoDaddy — renewal prices climb.
-
-Alternatives if taken: `jschauhan.com`, `jschauhan.org`, `chauhan-civil.com`. Avoid `.info`,
-`.xyz`, `.site` — they read as low-credibility on a CV.
-
-**If you pick a different domain**, run this once inside this folder to update every file:
-
-```bash
-cd "/Users/mj/Desktop/Papa Documents/US Application Kit/site-deploy"
-grep -rl "drjschauhan.com" . | xargs sed -i '' "s/drjschauhan\.com/yourdomain.com/g"
-```
-
-That covers `CNAME`, all four pages (canonical + social tags), `robots.txt` and `sitemap.xml`.
-Confirm with `grep -r drjschauhan .` — it should print nothing.
+Push **this** folder, not the `site/` folder from the design tool.
 
 ---
 
 ## Step 1 — Create the repository
 
-At <https://github.com/new>:
+Signed in as **jsccivil**, go to <https://github.com/new>:
 
-- **Name:** `jschauhan-site`
-- **Visibility:** **Public** (Pages on a free account only serves public repos)
-- **Do not** add a README, .gitignore or licence
+- **Repository name:** `jsccivil.github.io` — exactly that, including the `.github.io`
+- **Public**
+- Leave "Add a README", `.gitignore` and licence **unchecked**
+
+The name is not cosmetic. A repo named `<username>.github.io` becomes a user site served
+from the root of the domain. Any other name makes it a project site served from
+`jsccivil.github.io/<repo-name>/`, and the "Home / Career" links would need rewriting.
+
+### Let yourself push to it
+
+You'll be maintaining this, not him. On the new repo: **Settings → Collaborators →
+Add people → `mohitcek`**, then accept the invitation from your own account. Now you can
+push with your own credentials instead of his.
 
 ---
 
@@ -47,20 +34,26 @@ At <https://github.com/new>:
 ```bash
 cd "/Users/mj/Desktop/Papa Documents/US Application Kit/site-deploy"
 
-git init
-git add .
-git commit -m "Publish academic site for Dr. J. S. Chauhan"
-git branch -M main
-git remote add origin https://github.com/mohitcek/jschauhan-site.git
+# delete the CNAME file — it still points at the unregistered domain
+git rm CNAME
+
+# the previous attempt pointed at the old repo — repoint it
+git remote remove origin
+git remote add origin https://github.com/jsccivil/jsccivil.github.io.git
+
+git add -A
+git commit -m "Serve from jsccivil.github.io"
 git push -u origin main
 ```
 
-If it asks for a password, GitHub no longer accepts account passwords — use a
-[personal access token](https://github.com/settings/tokens), or switch the remote to SSH
-(`git@github.com:mohitcek/jschauhan-site.git`).
+If it asks for a password: GitHub stopped accepting account passwords in 2021. Use a
+[personal access token](https://github.com/settings/tokens) (classic, `repo` scope) as the
+password, or `gh auth login` if you have the CLI.
 
-Confirm on github.com that you see `index.html`, `career.html`, `publications.html`,
-`recognition.html`, `404.html`, `CNAME`, `.nojekyll` and the `assets/` folder.
+> The `git rm CNAME` line matters. That file is what told GitHub to serve the site from
+> `drjschauhan.com`, and it is what produced the "DNS check unsuccessful" error. If it stays
+> in the repo, the new site will fail the same way. `git add -A` then picks up the rewritten
+> canonical and social URLs across the four pages.
 
 ---
 
@@ -70,79 +63,34 @@ Repo → **Settings → Pages**:
 
 - **Source:** *Deploy from a branch*
 - **Branch:** `main`, folder `/ (root)` → **Save**
-- **Custom domain:** should already show `drjschauhan.com` (read from the `CNAME` file)
+- **Custom domain:** leave empty
 
-The site is live at `https://mohitcek.github.io/jschauhan-site/` within a couple of minutes,
-before the domain resolves. Open it to confirm the deploy worked.
-
----
-
-## Step 4 — Point the domain at GitHub
-
-In your registrar's DNS panel, delete any pre-filled parking records, then add:
-
-**Four A records** (bare domain):
-
-| Type | Name | Value |
-|---|---|---|
-| A | `@` | `185.199.108.153` |
-| A | `@` | `185.199.109.153` |
-| A | `@` | `185.199.110.153` |
-| A | `@` | `185.199.111.153` |
-
-**Four AAAA records** (IPv6, recommended):
-
-| Type | Name | Value |
-|---|---|---|
-| AAAA | `@` | `2606:50c0:8000::153` |
-| AAAA | `@` | `2606:50c0:8001::153` |
-| AAAA | `@` | `2606:50c0:8002::153` |
-| AAAA | `@` | `2606:50c0:8003::153` |
-
-**One CNAME record** (so `www.` works):
-
-| Type | Name | Value |
-|---|---|---|
-| CNAME | `www` | `mohitcek.github.io` |
-
-> The CNAME value is your **account** domain, *not* the repo name — this trips up most people.
-> On Cloudflare set the proxy status to **DNS only** (grey cloud), or certificate issuance fails.
-
-Check it:
-
-```bash
-dig drjschauhan.com +short        # the four 185.199.x.x addresses
-dig www.drjschauhan.com +short    # mohitcek.github.io
-```
+Live at **https://jsccivil.github.io** in 1–2 minutes. First-ever deploy occasionally takes
+closer to ten.
 
 ---
 
-## Step 5 — Enforce HTTPS
+## Step 4 — Clean up the old repo
 
-Once DNS resolves, return to **Settings → Pages** and tick **Enforce HTTPS** (available after
-GitHub issues the free certificate). A CV link that throws a security warning is worse than no
-link at all.
-
-Stuck on "certificate not yet created" after 24 hours? Remove the custom domain, save, re-add
-it, save again — that re-triggers issuance.
+The earlier push went to `mohitcek/jschauhan-site`. Delete it, or at minimum remove its
+custom domain (Settings → Pages). Two live copies of the same site split whatever search
+ranking his name earns, and Google may pick the wrong one.
 
 ---
 
-## Step 6 — Final checks
+## Step 5 — Checks
 
-- [ ] `https://drjschauhan.com` loads with a padlock
-- [ ] `https://www.drjschauhan.com` redirects to the bare domain
-- [ ] All four pages open and the nav links work
+- [ ] https://jsccivil.github.io loads with a padlock
+- [ ] All four pages open; nav links work
 - [ ] **Download CV** downloads the PDF
 - [ ] Paste the URL into WhatsApp or LinkedIn — the preview card shows his name and stats
-- [ ] Open on a phone: no sideways scrolling, header wraps cleanly
-- [ ] Submit the domain to [Google Search Console](https://search.google.com/search-console)
+- [ ] Open on a phone: no sideways scrolling
+- [ ] Submit to [Google Search Console](https://search.google.com/search-console) so the site
+      surfaces when a committee searches his name
 
 ---
 
 ## Updating later
-
-Edit the HTML, then:
 
 ```bash
 cd "/Users/mj/Desktop/Papa Documents/US Application Kit/site-deploy"
@@ -151,10 +99,26 @@ git commit -m "Update publications"
 git push
 ```
 
-Live in 1–2 minutes. Hard-refresh (⌘⇧R) if a change doesn't appear.
+Live in 1–2 minutes; hard-refresh (⌘⇧R) if you don't see it.
 
-**When the CV is revised:** drop the new PDF in, keeping the filename `Dr_JS_Chauhan_CV.pdf`,
-then commit and push. Every download link keeps working.
+**Revised CV:** drop the new PDF in with the same filename, `Dr_JS_Chauhan_CV.pdf`, then
+commit and push. Every download link keeps working.
+
+---
+
+## Adding a custom domain later
+
+Nothing here blocks it. If you register one:
+
+1. Add a file named `CNAME` containing just the domain, e.g. `drjschauhan.com`
+2. Update the `<link rel="canonical">`, `og:url`, `og:image` and `twitter:image` tags in all
+   four pages, plus `robots.txt` and `sitemap.xml` — or re-run `../site-tools/build.sh` with
+   `SITE_DOMAIN=yourdomain.com`
+3. At the registrar, four `A` records on `@` → `185.199.108.153`, `.109.153`, `.110.153`,
+   `.111.153`, and a `CNAME` on `www` → `jsccivil.github.io`
+4. Settings → Pages → Custom domain → enter it → Save, then tick **Enforce HTTPS**
+
+GitHub keeps redirecting `jsccivil.github.io` to the new domain, so old links survive.
 
 ---
 
@@ -168,38 +132,35 @@ then commit and push. Every download link keeps working.
 | `recognition.html` | Awards, patents, international standing |
 | `404.html` | Styled not-found page |
 | `assets/ds/styles.css` | Design-system stylesheet from the design tool |
-| `assets/site.css` | Responsive layer added on top (see below) |
+| `assets/site.css` | Responsive layer added on top |
 | `assets/portrait.jpg` | Portrait, re-encoded from 1.3 MB to 122 KB |
 | `Dr_JS_Chauhan_CV.pdf` | Served by the Download CV buttons |
-| `CNAME` | Tells GitHub which domain serves this repo |
-| `og-image.png` | Link preview card for LinkedIn/WhatsApp/X |
+| `og-image.png` | Link preview card |
 | `favicon.svg` | Browser-tab icon |
 | `robots.txt`, `sitemap.xml` | Search-engine indexing |
 | `.nojekyll` | Stops GitHub running the files through Jekyll |
+
+There is deliberately **no `CNAME` file** — that file is only for custom domains, and its
+presence is what caused the "DNS check unsuccessful" error before.
 
 ---
 
 ## Why not push `site/` directly
 
-The design tool's export is a **prototype**, not a deployable site. Three things would have
-broken in production, all fixed in this folder:
+The design tool's export is a prototype, not a deployable site. Three things would have broken:
 
-1. **It rendered nothing without JavaScript.** Every page loaded React, ReactDOM and Babel
-   (~2.5 MB) from `unpkg.com` at page load and rendered through that runtime. If unpkg is slow,
-   blocked (some university and corporate networks do block CDNs), or simply has a bad day, the
-   visitor got a **blank page**. Those pages are now plain HTML — no JavaScript at all.
-2. **The stylesheet lived in `_ds/`.** GitHub Pages runs Jekyll, which silently ignores any
-   directory beginning with an underscore — the CSS would have 404'd and the site would have
-   appeared completely unstyled. It now lives in `assets/ds/` and `.nojekyll` is shipped as well.
-3. **Unfinished variant blocks.** The homepage carried two alternative headlines and two portrait
-   treatments in `<sc-if>` tags for the design tool to choose between. Without the runtime, both
-   showed at once. The authored defaults are now baked in — the "Low cost is not low quality."
-   headline and the duotone portrait.
+1. **It rendered nothing without JavaScript.** Every page pulled React, ReactDOM and Babel
+   (~2.5 MB) from `unpkg.com` at load and rendered through that runtime. Blocked or slow CDN
+   meant a **blank page**. These pages are now plain HTML with no JavaScript.
+2. **The stylesheet lived in `_ds/`.** GitHub Pages runs Jekyll, which ignores directories
+   starting with an underscore — the CSS would have 404'd and the site would have appeared
+   unstyled. It's now `assets/ds/`, with `.nojekyll` as backup.
+3. **Unresolved variant blocks.** The homepage carried two headlines and two portrait
+   treatments in `<sc-if>` tags; without the runtime both showed at once. The authored
+   defaults are baked in.
 
-Also fixed: the layout overflowed horizontally at every width below 1280px (up to 948px of
-sideways scroll on a phone), because the export uses fixed pixel grids with no media queries.
-`assets/site.css` adds the breakpoints, and hover states — which were runtime-only attributes —
-are now real CSS.
+Also fixed: horizontal overflow at every width below 1280px (up to 948px of sideways scroll on
+a phone), since the export uses fixed pixel grids with no media queries.
 
-**If you re-export from the design tool**, don't copy the raw export over this folder. Re-run
-the flattener in `../site-tools/` (`./build.sh`) and copy the result across, or ask me to.
+**If you re-export the design**, don't copy it over this folder — run `../site-tools/build.sh`
+and copy the result, or ask me to.
