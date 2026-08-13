@@ -15,8 +15,14 @@ img { max-width: 100%; height: auto; }
 
 /* The hero headline is set at a fixed 110px; scale it with the viewport so it
    never outgrows its column. Caps at the original size on large screens. */
-.h1-hero { font-size: clamp(40px, 7.4vw, 110px) !important; }
-.h1-page { font-size: clamp(34px, 6.2vw, 76px) !important; }
+.h1-hero { font-size: clamp(34px, 7.4vw, 110px) !important; }
+.h1-page { font-size: clamp(30px, 6.2vw, 76px) !important; }
+
+/* "low quality." carries white-space:nowrap inline, which forces the hero wider
+   than a 320px phone. Below 480px let it wrap like any other text. */
+@media (max-width: 480px) {
+  .h1-hero span { white-space: normal !important; }
+}
 
 /* ---- tablet ---- */
 @media (max-width: 1100px) {
@@ -40,34 +46,69 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   .wrap { padding-left: 18px !important; padding-right: 18px !important; }
 
-  /* Header: logo, links and the CV button sit on one non-wrapping row.
-     Let it wrap and centre instead of scrolling sideways. */
+  /* Header: logo, links and the CV button sit on one non-wrapping row, wider
+     than a phone. Wrap into two tidy rows that share the page's left edge —
+     name and CV button on the first, section links on the second. */
   .navrow {
     flex-wrap: wrap !important;
-    gap: 12px !important;
-    justify-content: center !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
   }
+  .navrow > a[download] { margin-left: 0 !important; order: 2; }
   .navlinks {
     margin-left: 0 !important;
     order: 3;
     width: 100%;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     flex-wrap: wrap !important;
-    gap: 16px !important;
+    gap: 8px 18px !important;
   }
-  .navrow > a[download] { margin-left: auto; }
 
   .g6 { grid-template-columns: repeat(2, 1fr) !important; }
   .g-label { grid-template-columns: 1fr !important; gap: 4px !important; }
 
-  /* a wide data table scrolls inside its own box instead of widening the page */
-  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tscroll .tbl { min-width: 460px; font-size: 13px !important; }
+  /* the stat cells carry 22px side padding, which two-up leaves no room for text */
+  .g6 > * { padding-left: 14px !important; padding-right: 14px !important; }
+
+  /* Nothing on a phone should be smaller than 12px. The export sets several
+     labels at 10.5–11px, which is unreadable at arm's length. */
+  body { -webkit-text-size-adjust: 100%; }
+  [style*="font-size:10.5px"], [style*="font-size:11px"] { font-size: 12px !important; }
+  [style*="font-size:13px"] { font-size: 13.5px !important; }
+
+  /* The projects table stops being a table and becomes a stack of cards. Each
+     cell shows its column heading, carried over as data-label at build time. */
+  .tscroll { overflow: visible; }
+  .tbl, .tbl tbody, .tbl tr, .tbl td { display: block !important; width: auto !important; }
+  .tbl thead { display: none !important; }
+  .tbl tr {
+    border: 1px solid var(--color-divider);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .tbl td {
+    text-align: left !important;
+    white-space: normal !important;
+    border: 0 !important;
+    padding: 3px 0 !important;
+  }
+  .tbl td[data-label]::before {
+    content: attr(data-label) " — ";
+    font-size: 11.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+  }
+  /* the first cell is the project name; it needs no label */
+  .tbl td:first-child { font-weight: 600; padding-bottom: 6px !important; }
+  .tbl td:first-child::before { content: none; }
 }
 
 /* ---- small phone ---- */
 @media (max-width: 400px) {
-  .g6, .g5 { grid-template-columns: 1fr 1fr !important; }
+  .g6, .g5 { grid-template-columns: 1fr !important; }
+  .g6 > * { border-right: 0 !important; }
   .navlinks { gap: 12px !important; font-size: 12px !important; }
 }
 
@@ -75,4 +116,20 @@ img { max-width: 100%; height: auto; }
 @media print {
   .navrow a[download] { display: none; }
   body { background: #fff !important; color: #000 !important; }
+}
+
+/* ---- section headings on small screens ------------------------------------
+   Headings are set at a fixed 30px in uppercase; a single long word such as
+   "CORRESPONDENCE" is wider than a 320px phone. Scale them, and let the header
+   row (heading + "Full career" link) wrap instead of pushing sideways. */
+@media (max-width: 640px) {
+  .h2-sec { font-size: clamp(21px, 6.2vw, 30px) !important; }
+  .sechead { flex-wrap: wrap !important; gap: 8px 12px !important; }
+  .sechead a { margin-left: 0 !important; }
+  .card-kicker { font-size: 12px !important; }
+}
+
+/* the stacked table's column labels; keep them legible rather than 11px */
+@media (max-width: 640px) {
+  .tbl td[data-label]::before { font-size: 12px; }
 }
