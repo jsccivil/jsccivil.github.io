@@ -133,3 +133,17 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   .tbl td[data-label]::before { font-size: 12px; }
 }
+
+/* ---- the stats strip gained a seventh figure -------------------------------
+   Seven across is tight even on a laptop; step it down earlier than the others. */
+.g7 { grid-template-columns: repeat(7, 1fr); }
+@media (max-width: 1180px) { .g7 { grid-template-columns: repeat(4, 1fr) !important; } }
+@media (max-width: 820px)  { .g7 { grid-template-columns: repeat(3, 1fr) !important; } }
+@media (max-width: 640px)  {
+  .g7 { grid-template-columns: repeat(2, 1fr) !important; }
+  .g7 > * { padding-left: 14px !important; padding-right: 14px !important; }
+}
+@media (max-width: 400px)  { .g7 { grid-template-columns: 1fr !important; } .g7 > * { border-right: 0 !important; } }
+
+/* the Directorship card's two-column group list stacks on narrow screens */
+@media (max-width: 820px) { .g2-lead { grid-template-columns: 1fr !important; gap: 22px !important; } }
